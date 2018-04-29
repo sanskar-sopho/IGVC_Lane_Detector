@@ -16,7 +16,7 @@ class Lanes
 	Mat img,img_gray,bisect;
 	vector<Vec2i> L,R;
 public:
-	Lanes(string name);
+	Lanes(Mat im);
 	void Mix_Channel();
 	void Intensity_distribution();
 	void display();
@@ -32,32 +32,47 @@ public:
 int main(int argc, char** argv)
 {
 	if(argc < 2) return 0;
-	Lanes L(argv[1]);
-	L.Intensity_adjust();
-	L.Mix_Channel();
-	// L.display();
-	// L.Intensity_distribution();
+	VideoCapture vc(argv[1]);
+	Mat frame;
+	vc>>frame;
+	resize(frame,frame,Size(1200,600));
+	cout<<frame.rows<<' '<<frame.cols;
+	int c = 0;
+	while(frame.data)
+	{
+		c++;
+		vc>>frame;
+		if(c%10 != 0 ) continue;
+		if(c > 1000) c=0;
+		resize(frame,frame,Size(1200,600));
+		Lanes L(frame	);
+		L.Intensity_adjust();
+		L.Mix_Channel();
+		// L.display();
+		// L.Intensity_distribution();
 
-	// L.Brightest_Pixel();
-	// L.control_points();
-	// L.Hough();
-	// L.Intensity_distribution();
-	// L.Mix_Channel();
-	// L.display();
-	L.Edge();
-	// L.Hough();
-	// L.display();
-	L.Brightest_Pixel();
-	L.control_points();
-	// L.control_vanishing();
+		// L.Brightest_Pixel();
+		// L.control_points();
+		// L.Hough();
+		// L.Intensity_distribution();
+		// L.Mix_Channel();
+		// L.display();
+		L.Edge();
+		// L.Hough();
+		// L.display();
+		L.Brightest_Pixel();
+		L.control_points();
+		// L.control_vanishing();
+		waitKey(5);
+	}
 	return 0;
 
 }
 
-Lanes::Lanes(string name)
+Lanes::Lanes(Mat im)
 {
-	this->img = imread(name, CV_LOAD_IMAGE_COLOR);
-	this->img_gray = imread(name, CV_LOAD_IMAGE_GRAYSCALE);
+	this->img = im;
+	cvtColor(im,img_gray,CV_BGR2GRAY);
 }
 
 void Lanes::Mix_Channel()
@@ -71,8 +86,8 @@ void Lanes::Mix_Channel()
 			if(temp > 255) temp=255;
 			img_gray.at<uchar>(i,j) = temp;
 		}
-	imshow("Mix_Chann",img_gray);
-	waitKey(0);
+	// imshow("Mix_Chann",img_gray);
+	// waitKey(0);
 }
 
 void Lanes::display()
@@ -116,8 +131,8 @@ void Lanes::Intensity_adjust()
 				if(temp < 0) temp = 0;
 				img.at<Vec3b>(i,j)[k] = temp;
 			}
-	imshow("Filtered Image", img);
-	waitKey(0);
+	// imshow("Filtered Image", img);
+	// waitKey(0);
 }
 
 void Lanes::Brightest_Pixel()
@@ -171,9 +186,9 @@ void Lanes::Brightest_Pixel()
 		if(max > 100) bisect.at<uchar>(i,r) = 255;
 	}
 	// Dilation();
-	imshow("bisect",bisect);
+	// imshow("bisect",bisect);
 	// imshow("Threshold",img_gray);
-	waitKey(0);
+	// waitKey(0);
 }
 
 void Lanes::Edge()
@@ -198,7 +213,7 @@ void Lanes::Edge()
 		}
 	}
 	img_gray = temp;
-	imshow("erode",img_gray);
+	// imshow("erode",img_gray);
 	// Sobel(img_gray, Gx, -1, 1, 0, 3, CV_SCHARR);
 	// Sobel(img_gray, Gy, -1, 0, 1, 3, CV_SCHARR);
 	// // imshow("gx",Gx);
@@ -247,7 +262,7 @@ void Lanes::Edge()
 	// imshow("edges",img_gray);
 	// imshow("ga",Ga); imshow("gb",Gb); imshow("Gc",Gc); imshow("Gd", Gd);
 	// // imshow("Gx", Gx); imshow("Gy",Gy);
-	waitKey(0);
+	// waitKey(0);
 }
 
 void Lanes::Dilation()
@@ -285,9 +300,9 @@ void Lanes::Hough()
 	HoughLinesP(img_gray, lines_1, 3.0, 2.0*CV_PI/180, 30);
 	for(int i = 0; i < lines_1.size(); i++)
 		line(color_lines, Point(lines_1[i][0], lines_1[i][1]), Point(lines_1[i][2], lines_1[i][3]), Scalar(255,0,0), 3, 8);
-	imshow("lines_bisect",color_lines);
+	// imshow("lines_bisect",color_lines);
 	// imshow("lines_gray",img_gray);
-	waitKey(0);
+	// waitKey(0);
 }
 
 void Lanes::control_points()
@@ -333,9 +348,10 @@ void Lanes::control_points()
 			x_r = j; y_r = i;
 		}
 	}
-	imshow("points",temp);
+	// imshow("points",temp);
+	namedWindow("lanes",WINDOW_NORMAL);
 	imshow("lanes",img);
-	waitKey(0);
+	// waitKey(0);
 }
 
 // void Lanes::control_vanishing()
